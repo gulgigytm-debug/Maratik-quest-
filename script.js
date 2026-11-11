@@ -1,77 +1,21 @@
-const ex = [["Приседания", 180], ["Отжимания", 180], ["Подтягивания", 180], ["Пресс", 180], ["Планка", 180], ["Выпады", 180], ["Бёрпи", 180]];
-let xp = +(localStorage.xp || 0), qc = +(localStorage.qc || 0), cur = 0, left = 0, timer = null, stream = null, lastFrame = null, noMove = 0;
-document.getElementById('xp').textContent = xp;
-document.getElementById('quests').textContent = qc;
-
-function render() {
-  document.getElementById('list').innerHTML = ex.map((e, i) => {
-    const locked = i > cur, done = i < cur;
-    return `<div class="card ${done ? 'done' : ''}">
-    <b>${i + 1}. ${e[0]}</b> ${done ? '✅' : locked ? '🔒' : ''}<br>
-    <span class="timer">${i === cur ? fmt(left) : fmt(e[1])}</span><br>
-    <span class="${locked ? 'lock' : 'ok'}">${done ? 'Сделано' : locked ? 'Закрыто, сначала предыдущее' : 'Сейчас делаешь'}</span><br>
-    <input type="checkbox" ${done ? 'checked' : ''} disabled> Галочка откроется только после таймера и камеры
-    ${i === cur ? `<button onclick="startQuest()">НАЧАТЬ</button>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function fmt(s) { return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, '0'); }
-
-async function startQuest() {
-  if (timer) return;
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    document.getElementById('cam').srcObject = stream;
-  } catch (e) {
-    alert("Разреши камеру, брат, без неё таймер не пойдёт");
-    return;
-  }
-  left = ex[cur][1]; noMove = 0; render();
-  document.getElementById('status').textContent = "Камера идёт. Двигайся, если уйдёшь, таймер встанет!";
-  timer = setInterval(() => {
-    if (document.hidden) { document.getElementById('status').textContent = "⛔ Свернул, таймер СТОП"; return; }
-    if (!stream || !stream.active) { document.getElementById('status').textContent = "⛔ Камера выключена, таймер СТОП"; return; }
-    if (!hasMove()) { noMove++; document.getElementById('status').textContent = "⛔ Тебя не видно / нет движения, таймер СТОП"; if (noMove > 3) return; return; }
-    noMove = 0; left--; render();
-    document.getElementById('status').textContent = "🔥 Делаешь: " + ex[cur][0] + " | Осталось " + fmt(left);
-    if (left <= 0) {
-      clearInterval(timer); timer = null;
-      stream.getTracks().forEach(t => t.stop()); cur++;
-      if (cur >= ex.length) {
-        document.getElementById('finish').disabled = false;
-        document.getElementById('status').textContent = "Всё, брат, жми КВЕСТ ВЫПОЛНЕН!";
-      } else {
-        document.getElementById('status').textContent = "Красавчик, следующее упражнение!";
-      }
-      render();
-    }
-  }, 1000);
-}
-
-function hasMove() {
-  const v = document.getElementById('cam');
-  if (!v.videoWidth) return false;
-  const c = document.createElement('canvas'); c.width = 64; c.height = 48;
-  const x = c.getContext('2d'); x.drawImage(v, 0, 0, 64, 48);
-  const d = x.getImageData(0, 0, 64, 48).data; let diff = 0;
-  if (lastFrame) { for (let i = 0; i < d.length; i += 40) { diff += Math.abs(d[i] - lastFrame[i]); } }
-  lastFrame = d; return diff > 900;
-}
-
-document.getElementById('finish').onclick = () => {
-  xp += 35; qc++; localStorage.xp = xp; localStorage.qc = qc;
-  document.getElementById('xp').textContent = xp;
-  document.getElementById('quests').textContent = qc;
-  alert("Красавчик, брат! +35 опыта, по-честному!");
-  cur = 0; document.getElementById('finish').disabled = true; render();
-};
-
-document.getElementById('resetBtn').onclick = () => {
-  localStorage.clear(); xp = 0; qc = 0; cur = 0;
-  document.getElementById('xp').textContent = 0;
-  document.getElementById('quests').textContent = 0;
-  render();
-};
-
-render();
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;color:#fff;min-height:100vh}
+.bg{position:fixed;inset:0;background:radial-gradient(circle at 50% 0%,#3b1a6d,#0a0618 60%,#000);z-index:-1}
+.panel{position:relative;max-width:420px;margin:60px auto;padding:24px 20px;background:rgba(10,10,30,.85);border:2px solid #3aa0ff;box-shadow:0 0 25px #3aa0ff55}
+.system{text-align:center;letter-spacing:6px;font-size:24px;text-shadow:0 0 12px #3aa0ff}
+.corner{position:absolute;width:22px;height:22px;border:3px solid #ffe600}
+.tl{top:-3px;left:-3px;border-right:0;border-bottom:0}
+.tr{top:-3px;right:-3px;border-left:0;border-bottom:0}
+.bl{bottom:-3px;left:-3px;border-right:0;border-top:0}
+.br{bottom:-3px;right:-3px;border-left:0;border-top:0}
+input{width:100%;padding:14px;background:#0a1526;color:#fff;border:1px solid #3aa0ff;font-size:18px;margin:10px 0}
+button{width:100%;padding:15px;margin-top:10px;background:#7b2cff;color:#fff;border:0;font-size:18px;font-weight:900;letter-spacing:2px}
+#skipBtn{background:transparent;border:1px solid #888;color:#bbb;font-size:14px}
+.progress{height:6px;background:#333;margin-top:15px}
+#bar{height:100%;width:14%;background:#3aa0ff}
+.opt{display:block;width:100%;text-align:left;padding:13px;margin:7px 0;background:#111c33;border:1px solid #3aa0ff;color:#fff}
+.opt.on{background:#7b2cff;border-color:#ffe600}
+#stats{background:#0a1526;padding:12px;border:1px solid #333;margin:10px 0;line-height:1.7}
+.quest{border:1px solid #3aa0ff;padding:12px;margin:10px 0}
+#timer{text-align:center;font-size:36px;font-weight:900;color:#ffe600}
+video{width:100%;border:2px solid #ffe600;margin-top:10px}
