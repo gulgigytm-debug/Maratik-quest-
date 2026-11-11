@@ -8,26 +8,23 @@
 </head>
 <body>
 <div class="bg"></div>
-
-<!-- ЭКРАН ВОПРОСОВ -->
 <div id="quiz" class="panel">
   <div class="corner tl"></div><div class="corner tr"></div>
   <div class="corner bl"></div><div class="corner br"></div>
   <h1 class="system">SYSTEM</h1>
-  <p id="qCount">Вопрос 1 из 7</p>
+  <p id="qCount">Вопрос 1 из 8</p>
   <h2 id="qTitle">1. Как тебя зовут?</h2>
   <div id="qBody"></div>
   <button id="nextBtn" onclick="nextQ()">ДАЛЕЕ</button>
   <button id="skipBtn" onclick="skipQ()">ПРОПУСТИТЬ</button>
   <div class="progress"><div id="bar"></div></div>
 </div>
-
-<!-- ЭКРАН КВЕСТА + СТАТИСТИКА -->
 <div id="main" style="display:none">
   <div class="panel">
     <div class="corner tl"></div><div class="corner tr"></div>
     <div class="corner bl"></div><div class="corner br"></div>
-    <h1 class="system">КВЕСТ МАРАТИКА</h1>
+    <h1 class="system">SYSTEM</h1>
+    <div id="lvlBox">LVL 1</div>
     <div id="stats"></div>
     <div id="quests"></div>
     <video id="cam" autoplay playsinline muted style="display:none"></video>
@@ -35,7 +32,6 @@
     <button onclick="resetAll()">СБРОСИТЬ АНКЕТУ</button>
   </div>
 </div>
-
 <script src="script.js"></script>
 </body>
 </html>
